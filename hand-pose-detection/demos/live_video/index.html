@@ -15,8 +15,11 @@ limitations under the License.
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0, user-scalable=no">
   <style>
-    body {
+    html, body {
+      padding: 0;
       margin: 0;
+      width: 100%;
+      height: 100%;
     }
     #stats {
       position: relative;
@@ -26,18 +29,26 @@ limitations under the License.
     #main {
       position: relative;
       margin: 0;
+      width: 100%;
+      height: 100%;
     }
-    #canvas-wrapper {
+    .container { 
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
+    .canvas-wrapper {
       position: relative;
     }
     #scatter-gl-container-left, #scatter-gl-container-right {
+      display: none !important;
       position: relative;
       float: left;
     }
   </style>
 </head>
 <body>
-  <div id="stats"></div>
   <div id="main">
     <div class="container">
       <div class="canvas-wrapper">
@@ -48,12 +59,13 @@ limitations under the License.
           visibility: hidden;
           width: auto;
           height: auto;
+          display: none;
           ">
         </video>
       </div>
-      <div id="scatter-gl-container-left"></div>
+      <div id="scatter-gl-container-left" hidden></div>
       </div>
-      <div id="scatter-gl-container-right"></div>
+      <div id="scatter-gl-container-right" hidden ></div>
     </div>
   </div>
 </body>

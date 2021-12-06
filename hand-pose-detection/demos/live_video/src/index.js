@@ -21,20 +21,22 @@ import * as mpHands from '@mediapipe/hands';
 import * as tfjsWasm from '@tensorflow/tfjs-backend-wasm';
 
 tfjsWasm.setWasmPaths(
-    `https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@${
-        tfjsWasm.version_wasm}/dist/`);
+  `https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@${tfjsWasm.version_wasm}/dist/`
+);
 
 import * as handdetection from '@tensorflow-models/hand-pose-detection';
 
-import {Camera} from './camera';
-import {setupDatGui} from './option_panel';
-import {STATE} from './shared/params';
-import {setupStats} from './shared/stats_panel';
-import {setBackendAndEnvFlags} from './shared/util';
+import { Camera } from './camera';
+import { setupDatGui } from './option_panel';
+import { STATE } from './shared/params';
+import { setupStats } from './shared/stats_panel';
+import { setBackendAndEnvFlags } from './shared/util';
 
 let detector, camera, stats;
-let startInferenceTime, numInferences = 0;
-let inferenceTimeSum = 0, lastPanelUpdate = 0;
+let startInferenceTime,
+  numInferences = 0;
+let inferenceTimeSum = 0,
+  lastPanelUpdate = 0;
 let rafId;
 
 async function createDetector() {
@@ -46,13 +48,13 @@ async function createDetector() {
           runtime,
           modelType: STATE.modelConfig.type,
           maxHands: STATE.modelConfig.maxNumHands,
-          solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${mpHands.VERSION}`
+          solutionPath: `https://cdn.jsdelivr.net/npm/@mediapipe/hands@${mpHands.VERSION}`,
         });
       } else if (runtime === 'tfjs') {
         return handdetection.createDetector(STATE.model, {
           runtime,
           modelType: STATE.modelConfig.type,
-          maxHands: STATE.modelConfig.maxNumHands
+          maxHands: STATE.modelConfig.maxNumHands,
         });
       }
   }
@@ -105,8 +107,10 @@ function endEstimateHandsStats() {
     const averageInferenceTime = inferenceTimeSum / numInferences;
     inferenceTimeSum = 0;
     numInferences = 0;
-    stats.customFpsPanel.update(
-        1000.0 / averageInferenceTime, 120 /* maxValue */);
+    // stats.customFpsPanel.update(
+    //   1000.0 / averageInferenceTime,
+    //   120 /* maxValue */
+    // );
     lastPanelUpdate = endInferenceTime;
   }
 }
@@ -131,9 +135,9 @@ async function renderResult() {
     // Detectors can throw errors, for example when using custom URLs that
     // contain a model that doesn't provide the expected output.
     try {
-      hands = await detector.estimateHands(
-          camera.video,
-          {flipHorizontal: false});
+      hands = await detector.estimateHands(camera.video, {
+        flipHorizontal: false,
+      });
     } catch (error) {
       detector.dispose();
       detector = null;
@@ -151,29 +155,27 @@ async function renderResult() {
   if (hands && hands.length > 0 && !STATE.isModelChanged) {
     camera.drawResults(hands);
   }
+  camera.drawButtons();
+  camera.triggerButton(hands);
 }
 
 async function renderPrediction() {
-  await checkGuiUpdate();
+  // await checkGuiUpdate();
 
   if (!STATE.isModelChanged) {
     await renderResult();
   }
 
   rafId = requestAnimationFrame(renderPrediction);
-};
+}
 
 async function app() {
   // Gui content will change depending on which model is in the query string.
   const urlParams = new URLSearchParams(window.location.search);
-  if (!urlParams.has('model')) {
-    alert('Cannot find model in the query string.');
-    return;
-  }
 
   await setupDatGui(urlParams);
 
-  stats = setupStats();
+  // stats = setupStats();
 
   camera = await Camera.setupCamera(STATE.camera);
 
@@ -182,6 +184,6 @@ async function app() {
   detector = await createDetector();
 
   renderPrediction();
-};
+}
 
 app();

@@ -28,26 +28,29 @@ let TUNABLE_FLAG_DEFAULT_VALUE_MAP;
 const stringValueMap = {};
 
 export async function setupDatGui(urlParams) {
-  const gui = new dat.GUI({width: 300});
-  gui.domElement.id = 'gui';
+  // const gui = new dat.GUI({ width: 300 });
+  // gui.domElement.id = 'gui';
 
   // The camera folder contains options for video settings.
-  const cameraFolder = gui.addFolder('Camera');
-  const fpsController = cameraFolder.add(params.STATE.camera, 'targetFPS');
-  fpsController.onFinishChange((_) => {
-    params.STATE.isTargetFPSChanged = true;
-  });
-  const sizeController = cameraFolder.add(
-      params.STATE.camera, 'sizeOption', Object.keys(params.VIDEO_SIZE));
-  sizeController.onChange(_ => {
-    params.STATE.isSizeOptionChanged = true;
-  });
-  cameraFolder.open();
+  // const cameraFolder = gui.addFolder('Camera');
+  // const fpsController = cameraFolder.add(params.STATE.camera, 'targetFPS');
+  // fpsController.onFinishChange((_) => {
+  //   params.STATE.isTargetFPSChanged = true;
+  // });
+  // const sizeController = cameraFolder.add(
+  //   params.STATE.camera,
+  //   'sizeOption',
+  //   Object.keys(params.VIDEO_SIZE)
+  // );
+  // sizeController.onChange((_) => {
+  //   params.STATE.isSizeOptionChanged = true;
+  // });
+  // cameraFolder.open();
 
   // The model folder contains options for model selection.
-  const modelFolder = gui.addFolder('Model');
+  // const modelFolder = gui.addFolder('Model');
 
-  const model = urlParams.get('model');
+  const model = urlParams.get('model') || 'mediapipe_hands';
   let type = urlParams.get('type');
   let maxNumHands = urlParams.get('maxNumHands');
 
@@ -58,7 +61,7 @@ export async function setupDatGui(urlParams) {
         // Nulify invalid value.
         type = null;
       }
-      if (maxNumHands == null || maxNumHands < 1 ) {
+      if (maxNumHands == null || maxNumHands < 1) {
         // Nulify invalid value.
         maxNumHands = 2;
       }
@@ -68,63 +71,69 @@ export async function setupDatGui(urlParams) {
       break;
   }
 
-  const modelController = modelFolder.add(
-      params.STATE, 'model', Object.values(handdetection.SupportedModels));
+  // const modelController = modelFolder.add(
+  //   params.STATE,
+  //   'model',
+  //   Object.values(handdetection.SupportedModels)
+  // );
 
-  modelController.onChange(_ => {
-    params.STATE.isModelChanged = true;
-    showModelConfigs(modelFolder);
-    showBackendConfigs(backendFolder);
-  });
+  // modelController.onChange((_) => {
+  //   params.STATE.isModelChanged = true;
+  //   showModelConfigs(modelFolder);
+  //   showBackendConfigs(backendFolder);
+  // });
 
-  showModelConfigs(modelFolder, type, maxNumHands);
+  showModelConfigs(null, type, maxNumHands);
 
-  modelFolder.open();
+  // modelFolder.open();
 
-  const backendFolder = gui.addFolder('Backend');
+  // const backendFolder = gui.addFolder('Backend');
 
-  showBackendConfigs(backendFolder);
+  showBackendConfigs(null);
 
-  backendFolder.open();
+  // backendFolder.open();
 
-  return gui;
+  // return gui;
 }
 
 async function showBackendConfigs(folderController) {
   // Clean up backend configs for the previous model.
   const fixedSelectionCount = 0;
-  while (folderController.__controllers.length > fixedSelectionCount) {
-    folderController.remove(
-        folderController
-            .__controllers[folderController.__controllers.length - 1]);
-  }
+  // while (folderController.__controllers.length > fixedSelectionCount) {
+  //   folderController.remove(
+  //     folderController.__controllers[folderController.__controllers.length - 1]
+  //   );
+  // }
   const backends = params.MODEL_BACKEND_MAP[params.STATE.model];
   // The first element of the array is the default backend for the model.
   params.STATE.backend = backends[0];
-  const backendController =
-      folderController.add(params.STATE, 'backend', backends);
-  backendController.name('runtime-backend');
-  backendController.onChange(async backend => {
-    params.STATE.isBackendChanged = true;
-    await showFlagSettings(folderController, backend);
-  });
-  await showFlagSettings(folderController, params.STATE.backend);
+  // const backendController = folderController.add(
+  //   params.STATE,
+  //   'backend',
+  //   backends
+  // );
+  // backendController.name('runtime-backend');
+  // backendController.onChange(async (backend) => {
+  //   params.STATE.isBackendChanged = true;
+  //   await showFlagSettings(folderController, backend);
+  // });
+  await showFlagSettings(null, params.STATE.backend);
 }
 
 function showModelConfigs(folderController, type, maxNumHands) {
   // Clean up model configs for the previous model.
   // The first constroller under the `folderController` is the model
   // selection.
-  const fixedSelectionCount = 1;
-  while (folderController.__controllers.length > fixedSelectionCount) {
-    folderController.remove(
-        folderController
-            .__controllers[folderController.__controllers.length - 1]);
-  }
+  // const fixedSelectionCount = 1;
+  // while (folderController.__controllers.length > fixedSelectionCount) {
+  //   folderController.remove(
+  //     folderController.__controllers[folderController.__controllers.length - 1]
+  //   );
+  // }
 
   switch (params.STATE.model) {
     case handdetection.SupportedModels.MediaPipeHands:
-      addMediaPipeHandsControllers(folderController, type, maxNumHands);
+      addMediaPipeHandsControllers(null, type, maxNumHands);
       break;
     default:
       alert(`Model ${params.STATE.model} is not supported.`);
@@ -134,34 +143,40 @@ function showModelConfigs(folderController, type, maxNumHands) {
 // The MediaPipeHands model config folder contains options for MediaPipeHands config
 // settings.
 function addMediaPipeHandsControllers(modelConfigFolder, type, maxNumHands) {
-  params.STATE.modelConfig = {...params.MEDIAPIPE_HANDS_CONFIG};
+  params.STATE.modelConfig = { ...params.MEDIAPIPE_HANDS_CONFIG };
   params.STATE.modelConfig.type = type != null ? type : 'full';
   params.STATE.modelConfig.maxNumHands = maxNumHands != null ? maxNumHands : 2;
 
-  const typeController = modelConfigFolder.add(
-      params.STATE.modelConfig, 'type', ['lite', 'full']);
-  typeController.onChange(_ => {
-    // Set isModelChanged to true, so that we don't render any result during
-    // changing models.
-    params.STATE.isModelChanged = true;
-  });
+  // const typeController = modelConfigFolder.add(
+  //   params.STATE.modelConfig,
+  //   'type',
+  //   ['lite', 'full']
+  // );
+  // typeController.onChange((_) => {
+  //   // Set isModelChanged to true, so that we don't render any result during
+  //   // changing models.
+  //   params.STATE.isModelChanged = true;
+  // });
 
-  const maxNumHandsController = modelConfigFolder.add(
-    params.STATE.modelConfig, 'maxNumHands', 1, 10).step(1);
-    maxNumHandsController.onChange(_ => {
-    // Set isModelChanged to true, so that we don't render any result during
-    // changing models.
-    params.STATE.isModelChanged = true;
-  });
+  // const maxNumHandsController = modelConfigFolder
+  //   .add(params.STATE.modelConfig, 'maxNumHands', 1, 10)
+  //   .step(1);
+  // maxNumHandsController.onChange((_) => {
+  //   // Set isModelChanged to true, so that we don't render any result during
+  //   // changing models.
+  //   params.STATE.isModelChanged = true;
+  // });
 
-  const render3DController =
-      modelConfigFolder.add(params.STATE.modelConfig, 'render3D');
-  render3DController.onChange(render3D => {
-    document.querySelector('#scatter-gl-container-left').style.display =
-        render3D ? 'inline-block' : 'none';
-    document.querySelector('#scatter-gl-container-right').style.display =
-        render3D ? 'inline-block' : 'none';
-  });
+  // const render3DController = modelConfigFolder.add(
+  //   params.STATE.modelConfig,
+  //   'render3D'
+  // );
+  // render3DController.onChange((render3D) => {
+  //   document.querySelector('#scatter-gl-container-left').style.display =
+  //     render3D ? 'inline-block' : 'none';
+  //   document.querySelector('#scatter-gl-container-right').style.display =
+  //     render3D ? 'inline-block' : 'none';
+  // });
 }
 
 /**
@@ -172,8 +187,11 @@ async function initDefaultValueMap() {
   TUNABLE_FLAG_DEFAULT_VALUE_MAP = {};
   params.STATE.flags = {};
   for (const backend in params.BACKEND_FLAGS_MAP) {
-    for (let index = 0; index < params.BACKEND_FLAGS_MAP[backend].length;
-         index++) {
+    for (
+      let index = 0;
+      index < params.BACKEND_FLAGS_MAP[backend].length;
+      index++
+    ) {
       const flag = params.BACKEND_FLAGS_MAP[backend][index];
       TUNABLE_FLAG_DEFAULT_VALUE_MAP[flag] = await tf.env().getAsync(flag);
     }
@@ -242,19 +260,23 @@ function showBackendFlagSettings(folderController, backendName) {
     // Heuristically consider a flag with at least two options as tunable.
     if (flagValueRange.length < 2) {
       console.warn(
-          `The ${flag} is considered as untunable, ` +
-          `because its value range is [${flagValueRange}].`);
+        `The ${flag} is considered as untunable, ` +
+          `because its value range is [${flagValueRange}].`
+      );
       continue;
     }
 
     let flagController;
     if (typeof flagValueRange[0] === 'boolean') {
       // Show checkbox for boolean flags.
-      flagController = folderController.add(params.STATE.flags, flag);
+      // flagController = folderController.add(params.STATE.flags, flag);
     } else {
       // Show dropdown for other types of flags.
-      flagController =
-          folderController.add(params.STATE.flags, flag, flagValueRange);
+      // flagController = folderController.add(
+      //   params.STATE.flags,
+      //   flag,
+      //   flagValueRange
+      // );
 
       // Because dat.gui always casts dropdown option values to string, we need
       // `stringValueMap` and `onFinishChange()` to recover the value type.
@@ -266,13 +288,13 @@ function showBackendFlagSettings(folderController, backendName) {
           stringValueMap[flag][stringValue] = realValue;
         }
       }
-      flagController.onFinishChange(stringValue => {
-        params.STATE.flags[flag] = stringValueMap[flag][stringValue];
-      });
+      // flagController.onFinishChange((stringValue) => {
+      //   params.STATE.flags[flag] = stringValueMap[flag][stringValue];
+      // });
     }
-    flagController.name(flagName).onChange(() => {
-      params.STATE.isFlagChanged = true;
-    });
+    // flagController.name(flagName).onChange(() => {
+    //   params.STATE.isFlagChanged = true;
+    // });
   }
 }
 
@@ -293,12 +315,12 @@ async function showFlagSettings(folderController, backendName) {
   // The first constroller under the `folderController` is the backend
   // setting.
   const fixedSelectionCount = 1;
-  while (folderController.__controllers.length > fixedSelectionCount) {
-    folderController.remove(
-        folderController
-            .__controllers[folderController.__controllers.length - 1]);
-  }
+  // while (folderController.__controllers.length > fixedSelectionCount) {
+  //   folderController.remove(
+  //     folderController.__controllers[folderController.__controllers.length - 1]
+  //   );
+  // }
 
   // Show flag settings for the new backend.
-  showBackendFlagSettings(folderController, backendName);
+  showBackendFlagSettings(null, backendName);
 }
